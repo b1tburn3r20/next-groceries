@@ -123,7 +123,7 @@ export function GroceryManagerComponent() {
           <form onSubmit={addGrocery} className="mb-6">
             <div className="flex gap-2 items-center">
               <div className="relative flex-grow">
-                <input
+                <Input
                   type="text"
                   value={newGrocery}
                   onChange={(e) => setNewGrocery(e.target.value)}

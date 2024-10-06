@@ -4,7 +4,7 @@ import { getDatabase, ref, push, onValue, remove } from "firebase/database";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Plus, CheckCircle, Loader2 } from "lucide-react";
+import { ShoppingCart, Plus, CheckCircle, Loader2, Trash2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -33,6 +33,7 @@ const GroceryManagerComponent = () => {
   const [activeTab, setActiveTab] = useState("to-buy");
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
+    type: null,
     grocery: null,
   });
 
@@ -82,24 +83,31 @@ const GroceryManagerComponent = () => {
     }
   };
 
-  const openConfirmDialog = (grocery) => {
-    setConfirmDialog({ isOpen: true, grocery });
+  const openConfirmDialog = (type, grocery) => {
+    setConfirmDialog({ isOpen: true, type, grocery });
   };
 
   const closeConfirmDialog = () => {
-    setConfirmDialog({ isOpen: false, grocery: null });
+    setConfirmDialog({ isOpen: false, type: null, grocery: null });
   };
 
-  const confirmPurchase = () => {
+  const confirmAction = () => {
     if (confirmDialog.grocery) {
       const [id, name] = confirmDialog.grocery;
       const groceryRef = ref(database, `groceries/${id}`);
-      remove(groceryRef)
-        .then(() => push(purchasedInDB, name))
-        .then(() => closeConfirmDialog())
-        .catch((error) =>
-          console.error("Error moving grocery to purchased: ", error)
-        );
+
+      if (confirmDialog.type === "purchase") {
+        remove(groceryRef)
+          .then(() => push(purchasedInDB, name))
+          .then(() => closeConfirmDialog())
+          .catch((error) =>
+            console.error("Error moving grocery to purchased: ", error)
+          );
+      } else if (confirmDialog.type === "delete") {
+        remove(groceryRef)
+          .then(() => closeConfirmDialog())
+          .catch((error) => console.error("Error deleting grocery: ", error));
+      }
     }
   };
 
@@ -132,7 +140,7 @@ const GroceryManagerComponent = () => {
                 type="submit"
                 disabled={isAdding}
                 size="sm"
-                className="px-2 sm:px-3"
+                className="px-2 sm:px-3 bg-white hover:bg-gray-200 text-gray-800 transition-colors"
               >
                 {isAdding ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -182,11 +190,30 @@ const GroceryManagerComponent = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div
-                        className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-md cursor-pointer hover:bg-secondary/70 transition-colors mb-2"
-                        onClick={() => openConfirmDialog([id, name])}
+                        className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-md mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() =>
+                          openConfirmDialog("purchase", [id, name])
+                        }
                       >
-                        <span className="text-xs sm:text-sm">{name}</span>
-                        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm flex-grow">
+                          {name}
+                        </span>
+                        <div
+                          className="flex items-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openConfirmDialog("delete", [id, name]);
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                          >
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </motion.div>
                   ))
@@ -233,11 +260,14 @@ const GroceryManagerComponent = () => {
             <DialogContent className="max-w-[90vw] sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl">
-                  Confirm Purchase
+                  {confirmDialog.type === "purchase"
+                    ? "Confirm Purchase"
+                    : "Confirm Delete"}
                 </DialogTitle>
                 <DialogDescription className="text-sm sm:text-base">
-                  Are you sure you want to mark "{confirmDialog.grocery?.[1]}"
-                  as purchased?
+                  {confirmDialog.type === "purchase"
+                    ? `Are you sure you want to mark "${confirmDialog.grocery?.[1]}" as purchased?`
+                    : `Are you sure you want to delete "${confirmDialog.grocery?.[1]}" from your list?`}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex-col sm:flex-row sm:justify-end gap-2">
@@ -249,10 +279,16 @@ const GroceryManagerComponent = () => {
                   Cancel
                 </Button>
                 <Button
-                  onClick={confirmPurchase}
-                  className="w-full sm:w-auto text-sm"
+                  onClick={confirmAction}
+                  className={`w-full sm:w-auto text-sm ${
+                    confirmDialog.type === "delete"
+                      ? "bg-red-500 hover:bg-red-600"
+                      : ""
+                  }`}
                 >
-                  Confirm
+                  {confirmDialog.type === "purchase"
+                    ? "Confirm Purchase"
+                    : "Confirm Delete"}
                 </Button>
               </DialogFooter>
             </DialogContent>

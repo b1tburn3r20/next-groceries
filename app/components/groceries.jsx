@@ -111,24 +111,29 @@ const GroceryManagerComponent = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 min-h-screen flex items-start justify-start">
-      <Card className="w-full max-w-3xl bg-white/10 backdrop-blur-md shadow-lg">
+    <div className="container mx-auto p-2 sm:p-4 min-h-screen flex items-start justify-center">
+      <Card className="w-full max-w-md bg-white/10 backdrop-blur-md shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl text-white sm:text-3xl font-bold text-center">
+          <CardTitle className="text-xl sm:text-2xl md:text-3xl text-white font-bold text-center">
             Groceries
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={addGrocery} className="mb-6">
+          <form onSubmit={addGrocery} className="mb-4 sm:mb-6">
             <div className="flex gap-2 items-center">
               <Input
                 type="text"
                 value={newGrocery}
                 onChange={(e) => setNewGrocery(e.target.value)}
-                placeholder="Add a new grocery item"
-                className="flex-grow"
+                placeholder="Add item"
+                className="flex-grow text-white text-sm sm:text-base"
               />
-              <Button type="submit" disabled={isAdding}>
+              <Button
+                type="submit"
+                disabled={isAdding}
+                size="sm"
+                className="px-2 sm:px-3"
+              >
                 {isAdding ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -149,23 +154,21 @@ const GroceryManagerComponent = () => {
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger
                 value="to-buy"
-                className="flex items-center justify-center"
+                className="flex items-center justify-center text-xs sm:text-sm"
               >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">To Buy</span>
-                <span className="sm:hidden">Buy</span>
+                <ShoppingCart className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span>To Buy</span>
               </TabsTrigger>
               <TabsTrigger
                 value="purchased"
-                className="flex items-center justify-center"
+                className="flex items-center justify-center text-xs sm:text-sm"
               >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Purchased</span>
-                <span className="sm:hidden">Bought</span>
+                <CheckCircle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Purchased</span>
               </TabsTrigger>
             </TabsList>
             <TabsContent value="to-buy">
-              <h3 className="text-lg font-semibold text-white mb-3">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">
                 Items to buy:
               </h3>
               <AnimatePresence>
@@ -179,23 +182,23 @@ const GroceryManagerComponent = () => {
                       transition={{ duration: 0.2 }}
                     >
                       <div
-                        className="flex items-center justify-between p-3 bg-white rounded-md cursor-pointer hover:bg-secondary/70 transition-colors mb-2"
+                        className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-md cursor-pointer hover:bg-secondary/70 transition-colors mb-2"
                         onClick={() => openConfirmDialog([id, name])}
                       >
-                        <span className="text-sm sm:text-base">{name}</span>
-                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm">{name}</span>
+                        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <p className="text-center text-white/70 text-sm sm:text-base">
+                  <p className="text-center text-white/70 text-xs sm:text-sm">
                     No items to buy. Add some groceries!
                   </p>
                 )}
               </AnimatePresence>
             </TabsContent>
             <TabsContent value="purchased">
-              <h3 className="text-lg font-semibold text-white mb-3">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">
                 Recently purchased items:
               </h3>
               <AnimatePresence>
@@ -208,17 +211,17 @@ const GroceryManagerComponent = () => {
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <div className="flex items-center justify-between p-3 bg-white rounded-md mb-2">
-                        <span className="text-sm sm:text-base">{name}</span>
+                      <div className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-md mb-2">
+                        <span className="text-xs sm:text-sm">{name}</span>
                         <CheckCircle
-                          className="h-4 w-4 cursor-pointer"
+                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
                           onClick={() => removeFromRecentlyPurchased(id)}
                         />
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <p className="text-center text-white/70 text-sm sm:text-base">
+                  <p className="text-center text-white/70 text-xs sm:text-sm">
                     No recently purchased items.
                   </p>
                 )}
@@ -227,23 +230,28 @@ const GroceryManagerComponent = () => {
           </Tabs>
 
           <Dialog open={confirmDialog.isOpen} onOpenChange={closeConfirmDialog}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-[90vw] sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Confirm Purchase</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-lg sm:text-xl">
+                  Confirm Purchase
+                </DialogTitle>
+                <DialogDescription className="text-sm sm:text-base">
                   Are you sure you want to mark "{confirmDialog.grocery?.[1]}"
                   as purchased?
                 </DialogDescription>
               </DialogHeader>
-              <DialogFooter className="sm:flex-row sm:justify-end gap-2">
+              <DialogFooter className="flex-col sm:flex-row sm:justify-end gap-2">
                 <Button
                   variant="outline"
                   onClick={closeConfirmDialog}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto text-sm"
                 >
                   Cancel
                 </Button>
-                <Button onClick={confirmPurchase} className="w-full sm:w-auto">
+                <Button
+                  onClick={confirmPurchase}
+                  className="w-full sm:w-auto text-sm"
+                >
                   Confirm
                 </Button>
               </DialogFooter>
